@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>إلى ملكتي راويه 👑</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Reem+Kufi:wght@700&family=Alex+Brush&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            background: #020105; 
+            font-family: 'Cairo', sans-serif;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* شاشة القفل الزجاجية الفاخرة لتاريخ التعارف */
+        #auth-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #020105; z-index: 999999;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .auth-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 35px 25px; border-radius: 24px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            text-align: center; width: 88%; max-width: 360px;
+        }
+
+        .auth-title {
+            font-size: 1.3rem; font-weight: 700; margin-bottom: 25px; line-height: 1.6;
+            background: linear-gradient(135deg, #fff 0%, #ffe5ec 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .auth-inputs-row {
+            display: flex; justify-content: space-between; gap: 10px; direction: ltr; margin-bottom: 20px;
+        }
+
+        .auth-field-box {
+            flex: 1; display: flex; flex-direction: column; gap: 5px;
+        }
+
+        .auth-field-box span {
+            font-size: 0.8rem; color: #a1a1aa; font-family: 'Cairo', sans-serif;
+        }
+
+        .auth-input {
+            width: 100%; height: 50px; background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
+            color: #fff; text-align: center; font-size: 1.25rem; font-weight: 700;
+            font-family: 'Segoe UI', monospace; outline: none;
+            -webkit-user-select: text; user-select: text;
+            transition: all 0.3s ease;
+        }
+
+        .auth-input:focus {
+            border-color: #ff007f; box-shadow: 0 0 10px rgba(255, 0, 127, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .auth-btn {
+            width: 100%; height: 48px; background: linear-gradient(135deg, #ff007f, #7f00ff);
+            border: none; border-radius: 12px; color: white; font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(255, 0, 127, 0.3);
+            transition: all 0.3s ease; font-family: 'Cairo', sans-serif;
+        }
+
+        .auth-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+        .auth-error {
+            font-size: 1rem; color: #ff3366; margin-top: 15px; display: none;
+            font-weight: 700; line-height: 1.5;
+            text-shadow: 0 0 5px rgba(255, 51, 102, 0.2);
+        }
+
+        /* كانفاس التوجيه وتأثيرات اللمس الهلالية الناعمة */
+        #ambient-bleed-canvas {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            pointer-events: none; z-index: 1;
+        }
+
+        #global-glow-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 99999;
+        }
+
+        #drop-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 999; 
+        }
+
+        .falling-item {
+            position: absolute; animation: fall linear infinite; will-change: transform;
+            filter: drop-shadow(0 0 5px rgba(255, 0, 127, 0.2));
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-50px) rotate(0deg) scale(0.7); opacity: 0; }
+            10% { opacity: 0.8; }
+            100% { transform: translateY(105vh) rotate(360deg) scale(1.1); opacity: 0; }
+        }
+
+        /* كارت العرض الزجاجي الرئيسي */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 40px 25px;
+            border-radius: 24px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            text-align: center;
+            z-index: 10; 
+            width: 88%; max-width: 360px;
+            transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .counter-label-top {
+            font-size: 1.15rem; font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .counter-box {
+            font-size: 5rem; font-weight: 900; font-family: 'Segoe UI', monospace;
+            background: linear-gradient(135deg, #ff007f 0%, #7f00ff 50%, #00f2fe 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(255, 0, 127, 0.3));
+            line-height: 1; margin: 5px 0;
+        }
+
+        .counter-label-bottom {
+            font-size: 1.1rem; color: #00f2fe;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.2); letter-spacing: 3px;
+        }
+
+        .reveal-section, .finale-section {
+            display: none; opacity: 0; transform: scale(0.95);
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .congrats-english {
+            font-family: 'Alex Brush', cursive; font-size: 3.5rem;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .name-container-slot {
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Reem Kufi', sans-serif; font-size: 4.2rem; font-weight: 700;
+            margin-bottom: 15px; height: 90px;
+        }
+
+        .slotted-r-letter {
+            opacity: 0; transform: scale(0.3); color: #fff;
+            text-shadow: 0 0 20px #ff007f, 0 0 40px #7f00ff;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .slotted-r-letter.active { opacity: 1; transform: scale(1); }
+
+        .name-rawia-rest {
+            background: linear-gradient(135deg, #fff 0%, #ffe5ec 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .congrats-custom {
+            font-size: 1.75rem; font-weight: 800;
+            background: linear-gradient(135deg, #00f2fe 0%, #7f00ff 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .life-text {
+            font-size: 1.45rem; font-weight: 700;
+            background: linear-gradient(135deg, #ff007f 0%, #ff758c 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .finale-text {
+            font-size: 1.85rem; font-weight: 900; line-height: 1.7;
+            background: linear-gradient(135deg, #fff 0%, #ffe5ec 50%, #ff007f 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .finale-love {
+            font-family: 'Alex Brush', cursive; font-size: 4rem;
+            background: linear-gradient(135deg, #ff007f 0%, #00f2fe 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: heartBeat 1.2s infinite alternate cubic-bezier(0.215, 0.610, 0.355, 1);
+        }
+
+        @keyframes heartBeat { 0% { transform: scale(1); } 100% { transform: scale(1.03); } }
+
+        /* مسار السحب الرئيسي الأول لتركيب الاسم */
+        .slider-wrapper {
+            position: absolute; bottom: -80px; left: 50%; transform: translateX(-50%);
+            width: 260px; height: 56px; background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px;
+            display: flex; align-items: center; padding: 0 6px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4); opacity: 0;
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 4000;
+        }
+        .slider-wrapper.visible { bottom: 40px; opacity: 1; }
+
+        .slider-flower {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, #00f2fe, #7f00ff); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; 
+            font-size: 1.4rem; font-weight: 900; font-family: 'Segoe UI', sans-serif; color: white;
+            cursor: grab; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); position: absolute; left: 6px; touch-action: none;
+        }
+
+        /* شاشة نمو الوردة */
+        .black-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #030107; z-index: 1000; display: none; opacity: 0;
+            justify-content: center; align-items: center; transition: opacity 0.6s ease;
+        }
+
+        .flower-grow-container {
+            width: 100%; height: 100%; display: flex; justify-content: center; align-items: flex-end;
+            position: relative; padding-bottom: 8vh;
+        }
+
+        .svg-flower { width: 90%; max-width: 460px; height: 80vh; display: none; }
+        .flower-stem { stroke: #00f2fe; stroke-dasharray: 1000; stroke-dashoffset: 1000; filter: drop-shadow(0 0 6px #00f2fe); }
+        .flower-branch { stroke: #00f2fe; stroke-dasharray: 400; stroke-dashoffset: 400; }
+        .flower-petal { fill: #ff007f; opacity: 0; transform-origin: center; transform: scale(0); filter: drop-shadow(0 0 10px #ff007f); }
+        .flower-center { fill: #00f2fe; opacity: 0; transform-origin: center; transform: scale(0); filter: drop-shadow(0 0 8px #00f2fe); }
+
+        @keyframes drawPath { to { stroke-dashoffset: 0; } }
+        @keyframes growElement { to { opacity: 1; transform: scale(1); } }
+
+        .svg-flower.animate .flower-stem { animation: drawPath 2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .svg-flower.animate .flower-branch { animation: drawPath 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; animation-delay: 1s; }
+        .svg-flower.animate .flower-petal { animation: growElement 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .svg-flower.animate .flower-center { animation: growElement 0.8s ease forwards; animation-delay: 3s; }
+
+        /* شاشات الألعاب النقية الصافية */
+        .puzzle-overlay {
+            position: absolute; width: 330px; height: 450px;
+            background: #050209; border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px; display: none; z-index: 3000;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+        }
+
+        .game-canvas-container {
+            position: relative; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        canvas { touch-action: none; border-radius: 24px; }
+
+        /* صندوق الكشط */
+        .scratch-container-box {
+            position: absolute; width: 320px; height: 440px;
+            background: #050209; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px;
+            display: none; z-index: 3100; padding: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        .scratch-inner-card { position: relative; width: 280px; height: 280px; border-radius: 16px; overflow: hidden; }
+        
+        .scratch-secret-content {
+            position: absolute; width:100%; height:100%;
+            background: radial-gradient(circle, #1a032b 0%, #05010a 100%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        
+        .kiss-vector-glow {
+            font-size: 6.5rem;
+            filter: drop-shadow(0 0 25px #ff0055);
+            animation: kissPulse 1.2s infinite alternate ease-in-out;
+        }
+        @keyframes kissPulse { 0% { transform: scale(0.95); opacity: 0.9; } 100% { transform: scale(1.08); opacity: 1; } }
+
+        .scratch-canvas { position: absolute; top:0; left:0; z-index: 2; cursor: pointer; }
+
+        /* لوحة تحول الوردة */
+        .morph-screen-panel {
+            position: absolute; width: 330px; height: 450px;
+            background: #030107; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px;
+            display: none; z-index: 3500; box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            overflow: hidden;
+        }
+
+        /* --- نظام طبقات الصور وكدس العرض الجديد التفاعلي بالكامل (Photo Stack Container) --- */
+        .photo-stack-view {
+            display: none; position: absolute;
+            width: 320px; height: 450px;
+            z-index: 2500; perspective: 1000px;
+        }
+        
+        .stack-card {
+            position: absolute; width: 100%; height: 100%;
+            border-radius: 24px; padding: 12px;
+            background: #050209; border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+            cursor: grab; touch-action: none;
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        .stack-card img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <div class="auth-title">ادخلي تاريخ أول يوم جمعنا وتعرفنا بيه عمري..🤍</div>
+            <div class="auth-inputs-row">
+                <div class="auth-field-box">
+                    <span>اليوم</span>
+                    <input type="number" id="auth-day" class="auth-input" placeholder="--" min="1" max="31" oninput="if(this.value.length>2)this.value=this.value.slice(0,2)">
+                </div>
+                <div class="auth-field-box">
+                    <span>الشهر</span>
+                    <input type="number" id="auth-month" class="auth-input" placeholder="--" min="1" max="12" oninput="if(this.value.length>2)this.value=this.value.slice(0,2)">
+                </div>
+                <div class="auth-field-box">
+                    <span>السنة</span>
+                    <input type="number" id="auth-year" class="auth-input" placeholder="----" min="2000" max="2030" oninput="if(this.value.length>4)this.value=this.value.slice(0,4)">
+                </div>
+            </div>
+            <button class="auth-btn" id="auth-submit-btn">دخول للمفاجأة ✨</button>
+            <div class="auth-error" id="auth-error-msg">اكو غلط 🧐</div>
+        </div>
+    </div>
+
+    <audio id="bg-music" src="music.mp3" loop></audio>
+
+    <canvas id="ambient-bleed-canvas"></canvas>
+    <canvas id="global-glow-canvas"></canvas>
+
+    <div id="drop-container"></div>
+
+    <div class="glass-card" id="main-card">
+        <div class="stage" id="countdown-stage">
+            <div class="counter-label-top">أيام واني انتظر هاذ اليوم حتى افرح بيج</div>
+            <div class="counter-box" id="days-counter">365</div>
+            <div class="counter-label-bottom">يوم</div>
+        </div>
+        
+        <div class="reveal-section" id="reveal-stage">
+            <div class="congrats-english">Happy Birthday</div>
+            
+            <div class="name-container-slot">
+                <span class="slotted-r-letter" id="slot-r">ر</span>
+                <span class="name-rawia-rest" id="slot-rest">اوية</span>
+            </div>
+
+            <div class="congrats-custom">مبروك رورواتي الـ 22 سنه</div>
+            <div class="life-text">وعمر جديد حياتي 👑❤️</div>
+        </div>
+
+        <div class="finale-section" id="finale-stage">
+            <div class="finale-text">إن شاء الله سنة خير عليج عمري</div>
+            <div class="finale-love">Love you</div>
+        </div>
+    </div>
+
+    <div class="slider-wrapper" id="master-swipe-stage">
+        <div class="slider-flower" id="master-handle">R</div>
+    </div>
+
+    <div class="black-screen" id="rose-screen">
+        <div class="flower-grow-container">
+            <svg class="svg-flower" id="flower-svg" viewBox="0 0 400 600">
+                <path class="flower-stem" d="M200,600 L200,260" fill="none" stroke-width="10" stroke-linecap="round"/>
+                <path class="flower-branch" d="M200,450 Q130,420 90,380" fill="none" stroke-width="5" stroke-linecap="round"/>
+                <path class="flower-branch" d="M200,400 Q270,370 310,330" fill="none" stroke-width="5" stroke-linecap="round"/>
+                <path class="flower-branch" d="M200,320 Q140,290 110,240" fill="none" stroke-width="4" stroke-linecap="round"/>
+                
+                <path class="flower-petal" d="M90,380 C70,360 80,330 110,350 C110,350 100,380 90,380 Z" fill="#00f2fe" style="animation-delay: 1s;"/>
+                <path class="flower-petal" d="M310,330 C330,310 320,280 290,300 C290,300 300,330 310,330 Z" fill="#00f2fe" style="animation-delay: 1.3s;"/>
+                <path class="flower-petal" d="M110,240 C90,220 100,190 130,210 C130,210 120,240 110,240 Z" fill="#00f2fe" style="animation-delay: 1.6s;"/>
+
+                <circle class="flower-petal" cx="200" cy="260" r="44" style="animation-delay: 1.8s;"/>
+                <circle class="flower-petal" cx="150" cy="260" r="38" style="animation-delay: 2s;"/>
+                <circle class="flower-petal" cx="250" cy="260" r="38" style="animation-delay: 2.2s;"/>
+                <circle class="flower-petal" cx="200" cy="210" r="38" style="animation-delay: 2.4s;"/>
+                <circle class="flower-petal" cx="200" cy="310" r="38" style="animation-delay: 2.6s;"/>
+                <circle class="flower-center" cx="200" cy="260" r="22"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="puzzle-overlay" id="puzzle-stage-1">
+        <div class="game-canvas-container"><canvas id="nut-sort-canvas-1" width="330" height="450"></canvas></div>
+    </div>
+
+    <div class="puzzle-overlay" id="puzzle-stage-2">
+        <div class="game-canvas-container"><canvas id="nut-sort-canvas-2" width="330" height="450"></canvas></div>
+    </div>
+
+    <div class="photo-stack-view" id="photo-stack-container"></div>
+
+    <div class="scratch-container-box" id="scratch-box-window">
+        <div class="scratch-inner-card">
+            <div class="scratch-secret-content">
+                <div class="kiss-vector-glow">💋</div>
+            </div>
+            <canvas id="scratch-canvas-element" class="scratch-canvas" width="280" height="280"></canvas>
+        </div>
+    </div>
+
+    <div class="morph-screen-panel" id="rose-to-22-panel">
+        <canvas id="morph-canvas-element" width="330" height="450"></canvas>
+    </div>
+
+    <script>
+        const daysCounter = document.getElementById('days-counter');
+        const countdownStage = document.getElementById('countdown-stage');
+        const revealStage = document.getElementById('reveal-stage');
+        const finaleStage = document.getElementById('finale-stage');
+        const mainCard = document.getElementById('main-card');
+        const dropContainer = document.getElementById('drop-container');
+        const masterSwipe = document.getElementById('master-swipe-stage');
+        const masterHandle = document.getElementById('master-handle');
+        const roseScreen = document.getElementById('rose-screen');
+        const flowerSvg = document.getElementById('flower-svg');
+        const slotR = document.getElementById('slot-r');
+        const stackContainer = document.getElementById('photo-stack-container');
+
+        let currentStep = 1;
+        let currentDay = 365;
+        let fallingIntervalId = null;
+        let countInterval = null;
+        const itemsList = ['🌷', '🌸', '💖', '🫧', '✨'];
+
+        // --- نظام العداد الحركي الذكي لعبارات الخطأ بالتتابع ---
+        const authOverlay = document.getElementById('auth-overlay');
+        const authSubmitBtn = document.getElementById('auth-submit-btn');
+        const authErrorMsg = document.getElementById('auth-error-msg');
+        let wrongAttemptsCount = 0; // حساب عدد المحاولات الخاطئة
+        
+        authSubmitBtn.addEventListener('click', () => {
+            const dayInput = parseInt(document.getElementById('auth-day').value);
+            const monthInput = parseInt(document.getElementById('auth-month').value);
+            const yearInput = parseInt(document.getElementById('auth-year').value);
+            
+            // مطابقة تاريخ التوثيق الفعلي: 14/8/2025
+            if (dayInput === 14 && monthInput === 8 && yearInput === 2025) {
+                authOverlay.style.opacity = '0';
+                authOverlay.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    authOverlay.remove();
+                    startMainApplicationEngine();
+                }, 800);
+            } else {
+                wrongAttemptsCount++;
+                authErrorMsg.style.display = 'block';
+                
+                // تغيير العبارة بناءً على عدد مرات الخطأ المرتكبة
+                if (wrongAttemptsCount === 1) {
+                    authErrorMsg.innerText = "اكو غلط 🧐";
+                } else if (wrongAttemptsCount === 2) {
+                    authErrorMsg.innerText = "هاا متتذكرين اول يوم النا 🫠";
+                } else {
+                    authErrorMsg.innerText = "تعاي تعاي انطيج التاريخ برساله امري لله 🤦‍♂️🤍";
+                }
+
+                authErrorMsg.style.animation = 'none';
+                setTimeout(() => { authErrorMsg.style.animation = 'heartBeat 0.3s ease'; }, 10);
+            }
+        });
+
+        function startMainApplicationEngine() {
+            const music = document.getElementById('bg-music');
+            if(music) { music.play().catch(()=>{}); }
+
+            fallingIntervalId = setInterval(() => {
+                if (dropContainer.children.length > 18) return; 
+                const item = document.createElement('div'); item.classList.add('falling-item');
+                item.innerText = itemsList[Math.floor(Math.random() * itemsList.length)];
+                item.style.left = Math.random() * 95 + 'vw'; item.style.animationDuration = Math.random() * 2 + 4 + 's'; 
+                dropContainer.appendChild(item);
+                setTimeout(() => { item.remove(); }, 6000);
+            }, 350);
+
+            countInterval = setInterval(() => {
+                currentDay -= 5;
+                if (currentDay <= 0) {
+                    currentDay = 0; clearInterval(countInterval); daysCounter.innerText = "0";
+                    setTimeout(() => {
+                        countdownStage.style.display = 'none'; revealStage.style.display = 'block';
+                        setTimeout(() => { revealStage.style.opacity = '1'; revealStage.style.transform = 'scale(1)'; masterSwipe.classList.add('visible'); }, 50);
+                    }, 700);
+                } else { daysCounter.innerText = currentDay; }
+            }, 40);
+        }
+
+        // --- محرك تموج الخلفية وهالات اللمس المرتدة الفخمة (Aura Glow Engine) ---
+        const bleedCanvas = document.getElementById('ambient-bleed-canvas');
+        const bCtx = bleedCanvas.getContext('2d');
+        let bleedAngle = 0;
+
+        const globalCanvas = document.getElementById('global-glow-canvas');
+        const gCtx = globalCanvas.getContext('2d');
+        let auraWaves = [];
+        let particles = [];
+
+        function resizeCanvases() {
+            bleedCanvas.width = window.innerWidth; bleedCanvas.height = window.innerHeight;
+            globalCanvas.width = window.innerWidth; globalCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvases);
+        resizeCanvases();
+
+        function triggerAuraTouchGlow(x, y) {
+            auraWaves.push({
+                x: x, y: y, radius: 5, maxRadius: 60,
+                color: 'rgba(0, 242, 254, 0.25)', alpha: 1, speed: 2
+            });
+        }
+        window.addEventListener('pointerdown', (e) => { 
+            triggerAuraTouchGlow(e.clientX, e.clientY); 
+            const music = document.getElementById('bg-music');
+            if(music && music.paused && !document.getElementById('auth-overlay')) { music.play().catch(()=>{}); }
+        });
+
+        function triggerColorExplosionBurst(x, y) {
+            const colors = ['#00f2fe', '#ff007f', '#7f00ff', '#ffff00', '#00ffcc'];
+            for (let i = 0; i < 75; i++) {
+                let angle = Math.random() * Math.PI * 2;
+                let speed = Math.random() * 5 + 3;
+                particles.push({
+                    x: x, y: y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+                    radius: Math.random() * 2.5 + 1.5, color: colors[Math.floor(Math.random() * colors.length)],
+                    alpha: 1, decay: Math.random() * 0.015 + 0.01
+                });
+            }
+        }
+
+        function drawVisualSystemsLoop() {
+            bleedAngle += 0.002;
+            const w = bleedCanvas.width; const h = bleedCanvas.height;
+            const cx = w / 2 + Math.cos(bleedAngle) * (w * 0.12); const cy = h / 2 + Math.sin(bleedAngle * 1.2) * (h * 0.12);
+            bCtx.fillStyle = '#020105'; bCtx.fillRect(0, 0, w, h);
+            bCtx.save(); bCtx.globalCompositeOperation = 'screen';
+            let grad = bCtx.createRadialGradient(cx, cy, 10, cx, cy, Math.max(w, h) * 0.5);
+            grad.addColorStop(0, 'rgba(255, 0, 127, 0.07)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            bCtx.fillStyle = grad; bCtx.fillRect(0, 0, w, h); bCtx.restore();
+
+            gCtx.clearRect(0, 0, globalCanvas.width, globalCanvas.height);
+            
+            auraWaves.forEach((wave, idx) => {
+                wave.radius += wave.speed; wave.alpha = 1 - (wave.radius / wave.maxRadius);
+                if (wave.radius >= wave.maxRadius || wave.alpha <= 0) { auraWaves.splice(idx, 1); } 
+                else {
+                    gCtx.save(); gCtx.globalAlpha = wave.alpha;
+                    let waveGrad = gCtx.createRadialGradient(wave.x, wave.y, wave.radius * 0.1, wave.x, wave.y, wave.radius);
+                    waveGrad.addColorStop(0, wave.color); waveGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                    gCtx.fillStyle = waveGrad; gCtx.beginPath(); gCtx.arc(wave.x, wave.y, wave.radius, 0, Math.PI*2); gCtx.fill(); gCtx.restore();
+                }
+            });
+
+            particles.forEach((p, index) => {
+                p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.alpha -= p.decay;
+                if (p.alpha <= 0) { particles.splice(index, 1); } 
+                else {
+                    gCtx.save(); gCtx.globalAlpha = p.alpha; gCtx.shadowBlur = 6; gCtx.shadowColor = p.color;
+                    gCtx.fillStyle = p.color; gCtx.beginPath(); gCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); gCtx.fill(); gCtx.restore();
+                }
+            });
+
+            requestAnimationFrame(drawVisualSystemsLoop);
+        }
+        requestAnimationFrame(drawVisualSystemsLoop);
+
+        function stopFallingEffects() { clearInterval(fallingIntervalId); dropContainer.innerHTML = ""; }
+
+        function setupMasterSlider() {
+            let activePointerId = null; let maxDrag = masterSwipe.clientWidth - masterHandle.clientWidth - 12;
+            masterHandle.addEventListener('pointerdown', (e) => { activePointerId = e.pointerId; masterHandle.setPointerCapture(e.pointerId); });
+            masterHandle.addEventListener('pointermove', (e) => {
+                if (activePointerId !== e.pointerId) return;
+                let rect = masterSwipe.getBoundingClientRect(); let currentLeft = e.clientX - rect.left - (masterHandle.clientWidth / 2);
+                if (currentLeft < 6) currentLeft = 6; if (currentLeft > maxDrag) currentLeft = maxDrag;
+                masterHandle.style.left = currentLeft + 'px';
+                if (currentLeft >= maxDrag * 0.88) {
+                    activePointerId = null; masterHandle.releasePointerCapture(e.pointerId);
+                    masterHandle.style.transition = 'left 0.2s ease-out'; masterHandle.style.left = maxDrag + 'px';
+                    slotR.classList.add('active');
+                    let slotRect = slotR.getBoundingClientRect(); triggerColorExplosionBurst(slotRect.left + 15, slotRect.top + 30);
+                    setTimeout(() => { masterSwipe.classList.remove('visible'); setTimeout(() => { masterSwipe.remove(); nextStepEngine(); }, 400); }, 600);
+                }
+            });
+            masterHandle.addEventListener('pointerup', () => { activePointerId = null; masterHandle.style.transition = 'left 0.3s ease'; masterHandle.style.left = '6px'; });
+        }
+        setupMasterSlider();
+
+        function nextStepEngine() {
+            currentStep++;
+            mainCard.style.display = 'none';
+            stackContainer.style.display = 'none';
+            document.getElementById('puzzle-stage-1').style.display = 'none';
+            document.getElementById('puzzle-stage-2').style.display = 'none';
+            document.getElementById('scratch-box-window').style.display = 'none';
+            document.getElementById('rose-to-22-panel').style.display = 'none';
+
+            if (currentStep === 2) {
+                stopFallingEffects(); roseScreen.style.display = 'flex';
+                setTimeout(() => {
+                    roseScreen.style.opacity = '1'; flowerSvg.style.display = 'block'; flowerSvg.classList.add('animate');
+                    setTimeout(() => { roseScreen.style.opacity = '0'; setTimeout(() => { roseScreen.style.display = 'none'; nextStepEngine(); }, 600); }, 4800);
+                }, 50);
+            } 
+            else if (currentStep === 3) { initFullyLivingNutSortGame("nut-sort-canvas-1", 1, () => { nextStepEngine(); }); }
+            else if (currentStep === 4) { buildAndInitPhotoStack(["photo1.jpg", "photo2.jpg", "photo3.jpg", "photo4.jpg"], () => { nextStepEngine(); }); }
+            else if (currentStep === 5) { initFullyLivingNutSortGame("nut-sort-canvas-2", 2, () => { nextStepEngine(); }); }
+            else if (currentStep === 6) { initScratchCard(() => { nextStepEngine(); }); }
+            else if (currentStep === 7) { playRoseTo22MorphAnimation(() => { nextStepEngine(); }); }
+            else if (currentStep === 8) {
+                mainCard.style.display = 'block'; countdownStage.style.display = 'none'; revealStage.style.display = 'none';
+                finaleStage.style.display = 'block'; setTimeout(() => { finaleStage.style.opacity = '1'; finaleStage.style.transform = 'scale(1)'; }, 100);
+            }
+        }
+
+        function buildAndInitPhotoStack(imagesArray, allClearedCallback) {
+            stackContainer.innerHTML = "";
+            stackContainer.style.display = 'block';
+            
+            imagesArray.forEach((src, idx) => {
+                const card = document.createElement('div');
+                card.classList.add('stack-card');
+                card.innerHTML = `<img src="${src}" alt="">`;
+                
+                let zOffset = idx * -10;
+                let yOffset = idx * -8;
+                let scaleOffset = 1 - (idx * 0.04);
+                card.style.transform = `translate3d(0px, ${yOffset}px, ${zOffset}px) scale(${scaleOffset})`;
+                card.style.zIndex = 100 - idx;
+                
+                stackContainer.appendChild(card);
+            });
+
+            let cardsElements = Array.from(stackContainer.children);
+            let isDragging = false; let startX = 0; let currentX = 0;
+
+            function updateCardsLayout() {
+                cardsElements.forEach((card, idx) => {
+                    if (idx === 0) return;
+                    let zOffset = idx * -10; let yOffset = idx * -8; let scaleOffset = 1 - (idx * 0.04);
+                    card.style.transform = `translate3d(0px, ${yOffset}px, ${zOffset}px) scale(${scaleOffset})`;
+                });
+            }
+
+            function setCardTouchSwipe(cardElement) {
+                cardElement.addEventListener('pointerdown', (e) => {
+                    if (cardsElements[0] !== cardElement) return;
+                    isDragging = true; startX = e.clientX; cardElement.style.transition = 'none';
+                });
+
+                cardElement.addEventListener('pointermove', (e) => {
+                    if (!isDragging || cardsElements[0] !== cardElement) return;
+                    currentX = e.clientX - startX;
+                    let rotate = currentX * 0.08;
+                    cardElement.style.transform = `translate3d(${currentX}px, 0px, 0px) rotate(${rotate}deg)`;
+                });
+
+                const handleRelease = () => {
+                    if (!isDragging) return; isDragging = false;
+                    
+                    if (Math.abs(currentX) > 110) {
+                        let flyX = currentX > 0 ? window.innerWidth : -window.innerWidth;
+                        cardElement.style.transition = 'all 0.4s ease-in';
+                        cardElement.style.transform = `translate3d(${flyX}px, 0px, 0px) rotate(${currentX * 0.1}deg)`;
+                        cardElement.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            cardElement.remove();
+                            cardsElements.shift(); 
+                            if (cardsElements.length > 0) {
+                                cardsElements[0].style.transition = 'all 0.3s ease';
+                                cardsElements[0].style.transform = 'translate3d(0px, 0px, 0px) scale(1)';
+                                updateCardsLayout();
+                            } else {
+                                allClearedCallback();
+                            }
+                        }, 400);
+                    } else {
+                        cardElement.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                        cardElement.style.transform = 'translate3d(0px, 0px, 0px) scale(1)';
+                    }
+                    currentX = 0;
+                };
+
+                cardElement.addEventListener('pointerup', handleRelease);
+                cardElement.addEventListener('pointercancel', handleRelease);
+            }
+
+            cardsElements.forEach(card => setCardTouchSwipe(card));
+        }
+
+        function initFullyLivingNutSortGame(canvasId, levelNumber, completionCallback) {
+            const overlay = document.getElementById(canvasId).closest('.puzzle-overlay');
+            overlay.style.display = 'block'; const canvas = document.getElementById(canvasId); const ctx = canvas.getContext('2d');
+            let bolts = []; let maxNutsPerBolt = 4; const nutHeight = 24; const nutWidth = 52;
+
+            if (levelNumber === 1) {
+                bolts = [
+                    { x: 65, y: 130, height: 140, width: 14, nuts: ['#00f2fe', '#ff007f', '#00f2fe', '#ff007f'] },
+                    { x: 165, y: 130, height: 140, width: 14, nuts: ['#ff007f', '#00f2fe', '#ff007f', '#00f2fe'] },
+                    { x: 265, y: 130, height: 140, width: 14, nuts: [] }
+                ];
+            } else {
+                bolts = [
+                    { x: 45, y: 130, height: 140, width: 14, nuts: ['#7f00ff', '#ff007f', '#00f2fe', '#ff007f'] },
+                    { x: 125, y: 130, height: 140, width: 14, nuts: ['#00f2fe', '#7f00ff', '#7f00ff', '#00f2fe'] },
+                    { x: 205, y: 130, height: 140, width: 14, nuts: ['#ff007f', '#00f2fe', '#ff007f', '#7f00ff'] },
+                    { x: 285, y: 130, height: 140, width: 14, nuts: [] } 
+                ];
+            }
+
+            let selectedBoltIndex = null;
+            let animatingNut = { active: false, color: null, currentX: 0, currentY: 0, targetX: 0, targetY: 0, speed: 24, stage: 0, callback: null };
+
+            function drawAndAnimateLoop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (animatingNut.active) {
+                    if (animatingNut.stage === 0) { if (animatingNut.currentY > animatingNut.targetY) animatingNut.currentY -= animatingNut.speed; else { animatingNut.currentY = animatingNut.targetY; animatingNut.stage = 1; } } 
+                    else if (animatingNut.stage === 1) { if (animatingNut.currentX < animatingNut.targetX) { animatingNut.currentX += animatingNut.speed; if (animatingNut.currentX > animatingNut.targetX) animatingNut.currentX = animatingNut.targetX; } else if (animatingNut.currentX > animatingNut.targetX) { animatingNut.currentX -= animatingNut.speed; if (animatingNut.currentX < animatingNut.targetX) animatingNut.currentX = animatingNut.targetX; } else { animatingNut.stage = 2; } } 
+                    else if (animatingNut.stage === 2) { if (animatingNut.currentY < animatingNut.finalY) animatingNut.currentY += animatingNut.speed; else { animatingNut.currentY = animatingNut.finalY; animatingNut.active = false; if (animatingNut.callback) animatingNut.callback(); } }
+                }
+
+                bolts.forEach((bolt, idx) => {
+                    ctx.fillStyle = idx === selectedBoltIndex ? '#ff007f' : '#231d30'; ctx.fillRect(bolt.x - 16, bolt.y - 12, 46, 12);
+                    ctx.fillStyle = '#3c354a'; ctx.fillRect(bolt.x, bolt.y, bolt.width, bolt.height);
+                    bolt.nuts.forEach((color, nutIdx) => {
+                        ctx.fillStyle = color; let nutY = bolt.y + bolt.height - (nutIdx + 1) * nutHeight - 2;
+                        if (idx === selectedBoltIndex && nutIdx === bolt.nuts.length - 1 && !animatingNut.active) { nutY = bolt.y - 28; }
+                        ctx.beginPath(); ctx.roundRect(bolt.x - (nutWidth - bolt.width)/2, nutY, nutWidth, nutHeight - 3, 6); ctx.fill();
+                    });
+                });
+
+                if (animatingNut.active) { ctx.fillStyle = animatingNut.color; ctx.beginPath(); ctx.roundRect(animatingNut.currentX, animatingNut.currentY, nutWidth, nutHeight - 3, 6); ctx.fill(); }
+
+                let requiredFullPipes = (levelNumber === 1) ? 2 : 3; let correctCount = 0;
+                bolts.forEach(b => { if(b.nuts.length === maxNutsPerBolt && b.nuts.every(c => c === b.nuts[0])) correctCount++; });
+
+                ctx.save(); ctx.translate(165, 360);
+                ctx.fillStyle = correctCount >= requiredFullPipes ? '#ff007f' : 'rgba(255, 0, 127, 0.04)';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(0, -15); ctx.bezierCurveTo(-25, -40, -50, -15, -50, 10); ctx.bezierCurveTo(-50, 35, -25, 50, 0, 70); ctx.bezierCurveTo(25, 50, 50, 35, 50, 10); ctx.bezierCurveTo(50, -15, 25, -40, 0, -15); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+
+                if (correctCount >= requiredFullPipes && !animatingNut.active) {
+                    let rect = canvas.getBoundingClientRect(); triggerColorExplosionBurst(rect.left + 165, rect.top + 360);
+                    setTimeout(() => { canvas.removeEventListener('pointerdown', handleBoltTouchTap); overlay.style.display = 'none'; completionCallback(); }, 1200); return;
+                }
+                requestAnimationFrame(drawAndAnimateLoop);
+            }
+
+            function handleBoltTouchTap(e) {
+                const rect = canvas.getBoundingClientRect(); const clickX = e.clientX - rect.left; let targetBoltIdx = null;
+                bolts.forEach((bolt, idx) => { if (Math.abs(clickX - (bolt.x + bolt.width/2)) < 36) targetBoltIdx = idx; });
+                if (targetBoltIdx !== null) {
+                    if (selectedBoltIndex === null) { if (bolts[targetBoltIdx].nuts.length > 0) selectedBoltIndex = targetBoltIdx; } 
+                    else {
+                        let sourceBolt = bolts[selectedBoltIndex]; let destBolt = bolts[targetBoltIdx];
+                        if (selectedBoltIndex === targetBoltIdx) selectedBoltIndex = null;
+                        else if (destBolt.nuts.length < maxNutsPerBolt) {
+                            let nutColor = sourceBolt.nuts.pop();
+                            animatingNut = {
+                                active: true, color: nutColor, currentX: sourceBolt.x - (nutWidth - sourceBolt.width)/2,
+                                currentY: sourceBolt.y - 28, targetX: destBolt.x - (nutWidth - destBolt.width)/2,
+                                targetY: sourceBolt.y - 55, finalY: destBolt.y + destBolt.height - (destBolt.nuts.length + 1) * nutHeight - 2,
+                                speed: 24, stage: 0, callback: () => { destBolt.nuts.push(nutColor); }
+                            };
+                            selectedBoltIndex = null;
+                        }
+                    }
+                }
+            }
+            canvas.addEventListener('pointerdown', handleBoltTouchTap); requestAnimationFrame(drawAndAnimateLoop);
+        }
+
+        function initScratchCard(completionCallback) {
+            const box = document.getElementById('scratch-box-window'); const cv = document.getElementById('scratch-canvas-element'); const cx = cv.getContext('2d');
+            box.style.display = 'flex'; cx.fillStyle = '#bfa15f'; cx.fillRect(0,0,280,280); cx.globalCompositeOperation = 'destination-out';
+            let scratchedPixels = 0; let isDoneTriggered = false;
+            cv.addEventListener('pointermove', (e) => {
+                if (e.buttons !== 1) return; let r = cv.getBoundingClientRect(); cx.beginPath(); cx.arc(e.clientX - r.left, e.clientY - r.top, 24, 0, Math.PI*2); cx.fill();
+                scratchedPixels++;
+                if (scratchedPixels > 160 && !isDoneTriggered) {
+                    isDoneTriggered = true; let rect = cv.getBoundingClientRect(); triggerColorExplosionBurst(rect.left + 140, rect.top + 140);
+                    setTimeout(() => { box.style.display = 'none'; completionCallback(); }, 1500);
+                }
+            });
+        }
+
+        function playRoseTo22MorphAnimation(doneCallback) {
+            const panel = document.getElementById('rose-to-22-panel'); panel.style.display = 'block';
+            const cv = document.getElementById('morph-canvas-element'); const cx = cv.getContext('2d');
+            let progress = 0; let morphProgress = 0; let stage = 1; let petalOpacity = 0;
+
+            function drawMorphLoop() {
+                cx.clearRect(0, 0, cv.width, cv.height); cx.lineWidth = 5; cx.lineCap = 'round'; cx.lineJoin = 'round';
+                if (stage === 1) { progress += 0.012; if (progress >= 1) { progress = 1; stage = 2; setTimeout(() => { stage = 3; }, 1200); } if (progress > 0.5) petalOpacity = (progress - 0.5) * 2; } 
+                else if (stage === 3) { morphProgress += 0.015; if (morphProgress >= 1) { morphProgress = 1; stage = 4; setTimeout(() => { panel.style.display = 'none'; doneCallback(); }, 2000); } petalOpacity = 1 - morphProgress; }
+
+                cx.save(); cx.shadowBlur = 15; cx.shadowColor = '#00f2fe'; cx.strokeStyle = '#00f2fe';
+                cx.beginPath();
+                for(let t=0; t<=100; t++) {
+                    let ratio = t / 100; let rx = 165 - 40 * Math.sin(ratio * Math.PI); let ry = 350 - 200 * ratio;
+                    let n1x = 110 + 25 * Math.cos(ratio * Math.PI * 1.5 - Math.PI); let n1y = 180 + 25 * Math.sin(ratio * Math.PI * 1.5 - Math.PI);
+                    if (ratio > 0.5) { n1x = 110 - 25 + 50 * (ratio - 0.5)*2; n1y = 180 + 25 + 40 * (ratio - 0.5)*2; }
+                    let currentX = rx + (n1x - rx) * morphProgress; let currentY = ry + (n1y - ry) * morphProgress;
+                    if (stage === 1 && ratio > progress) break; if (t === 0) cx.moveTo(currentX, currentY); else cx.lineTo(currentX, currentY);
+                }
+                cx.stroke();
+
+                cx.beginPath();
+                for(let t=0; t<=100; t++) {
+                    let ratio = t / 100; let rx = 165 + 40 * Math.sin(ratio * Math.PI); let ry = 350 - 180 * ratio;
+                    let n2x = 210 + 25 * Math.cos(ratio * Math.PI * 1.5 - Math.PI); let n2y = 180 + 25 * Math.sin(ratio * Math.PI * 1.5 - Math.PI);
+                    if (ratio > 0.5) { n2x = 210 - 25 + 50 * (ratio - 0.5)*2; n2y = 180 + 25 + 40 * (ratio - 0.5)*2; }
+                    let currentX = rx + (n2x - rx) * morphProgress; let currentY = ry + (n2y - ry) * morphProgress;
+                    if (stage === 1 && ratio > progress) break; if (t === 0) cx.moveTo(currentX, currentY); else cx.lineTo(currentX, currentY);
+                }
+                cx.stroke(); cx.restore();
+
+                if (petalOpacity > 0) {
+                    cx.save(); cx.shadowBlur = 20; cx.shadowColor = '#ff007f'; cx.fillStyle = '#ff007f';
+                    cx.beginPath(); cx.arc(165, 140, 30, 0, Math.PI*2); cx.fill();
+                    cx.beginPath(); cx.arc(135, 130, 25, 0, Math.PI*2); cx.fill(); cx.beginPath(); cx.arc(195, 130, 25, 0, Math.PI*2); cx.fill();
+                    cx.restore();
+                }
+                if (stage < 5) requestAnimationFrame(drawMorphLoop);
+            }
+            requestAnimationFrame(drawMorphLoop);
+        }
+    </script>
+</body>
+</html>
