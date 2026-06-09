@@ -856,7 +856,7 @@
             requestAnimationFrame(drawMorphLoop);
         }
     </script>
-    <canvas id="final-magic-glow-layer" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999999; pointer-events: none; background: transparent;"></canvas>
+<canvas id="final-magic-glow-layer" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999999; pointer-events: none; background: transparent;"></canvas>
 
 <script>
 (function() {
@@ -864,79 +864,157 @@
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let particles = [];
-    const maxParticles = 65;
+    const maxParticles = 140; // زيادة عدد الجزيئات قليلاً لتوضيح الاسم ورسمه بدقة
+
+    // مؤقت عدم اللمس (Idle Timer)
+    let idleTimer;
+    let isDrawingName = false;
 
     function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        generateNameCoords(); // إعادة حساب النقاط لتناسب حجم الشاشة الجديد
     }
-    resize();
-    window.addEventListener('resize', resize);
 
-    const mouse = { x: null, y: null, radius: 100 };
+    const mouse = { x: null, y: null, radius: 110 };
     
-    window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+    // إعادة ضبط مؤقت ترك الشاشة (عند اللمس أو التحريك يتوقف رسم الاسم فوراً)
+    function resetIdleTimer() {
+        mouse.x = null; mouse.y = null; // تصفير عند الرفع
+        isDrawingName = false;
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+            isDrawingName = true;
+        }, 4000); // 4000 مللي ثانية = 4 ثوانٍ من ترك الشاشة ويبدأ تكوين الاسم
+    }
+
+    window.addEventListener('mousemove', (e) => { 
+        isDrawingName = false; clearTimeout(idleTimer);
+        mouse.x = e.clientX; mouse.y = e.clientY; 
+    });
     
     window.addEventListener('touchmove', (e) => { 
         if(e.touches.length > 0) {
+            isDrawingName = false; clearTimeout(idleTimer);
             mouse.x = e.touches[0].clientX; 
             mouse.y = e.touches[0].clientY; 
         }
     });
 
-    // تصفير كامل وفوري عند رفع اللمس
-    const clearMouse = () => { mouse.x = null; mouse.y = null; };
-    window.addEventListener('touchend', clearMouse);
-    window.addEventListener('touchcancel', clearMouse);
-    window.addEventListener('mouseleave', clearMouse);
+    window.addEventListener('touchend', resetIdleTimer);
+    window.addEventListener('touchcancel', resetIdleTimer);
+    window.addEventListener('mouseleave', resetIdleTimer);
+
+    // مصفوفة لتخزين نقاط الاسم المناسبة للشاشة
+    let nameCoords = [];
+
+    // دالة هندسية لرسم نقاط اسم "راوية" في منتصف الشاشة بشكل متناسق وموزع
+    function generateNameCoords() {
+        nameCoords = [];
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2 - 20; // رفع الاسم قليلاً ليكون فوق الكارت أو بمنتصف الشاشة
+        
+        // رسم تقريبي منسق للحروف بالنقاط (حرف حرف ليكون مرتباً ومشعاً)
+        // حرف الـ ر
+        for(let i=0; i<15; i++) nameCoords.push({x: cx + 90 - i*3, y: cy + 10 + i*4});
+        // حرف الـ ا
+        for(let i=0; i<15; i++) nameCoords.push({x: cx + 55, y: cy - 30 + i*5});
+        // حرف الـ و
+        for(let i=0; i<12; i++) {
+            let angle = (i / 12) * Math.PI * 2;
+            nameCoords.push({x: cx + 20 + Math.cos(angle)*12, y: cy + 30 + Math.sin(angle)*12});
+        }
+        for(let i=0; i<12; i++) nameCoords.push({x: cx + 20 - i*2, y: cy + 42 + i*2});
+        // حرف الـ ي
+        for(let i=0; i<10; i++) nameCoords.push({x: cx - 15 - i*4, y: cy + 35});
+        for(let i=0; i<10; i++) nameCoords.push({x: cx - 25 - i*2, y: cy + 35 + i*3});
+        // نقطتي الـ ي
+        nameCoords.push({x: cx - 25, y: cy + 55});
+        nameCoords.push({x: cx - 35, y: cy + 55});
+        // حرف الـ ة المربوطة
+        for(let i=0; i<16; i++) {
+            let angle = (i / 16) * Math.PI * 2;
+            nameCoords.push({x: cx - 75 + Math.cos(angle)*15, y: cy + 25 + Math.sin(angle)*15});
+        }
+        // نقطتي الـ ة
+        nameCoords.push({x: cx - 70, y: cy - 2});
+        nameCoords.push({x: cx - 80, y: cy - 2});
+    }
 
     class GlowParticle {
-        constructor() {
+        constructor(index) {
+            this.index = index;
             this.x = Math.random() * canvas.width;
             this.y = Math.random() * canvas.height;
-            this.size = Math.random() * 2 + 1; // حجم أصغر لزيادة النعومة
+            this.size = Math.random() * 2 + 1.2;
             this.baseX = this.x; 
             this.baseY = this.y;
-            this.vx = 0; // سرعة أفقية مضافة للتحكم في الانسيابية
-            this.vy = 0; // سرعة رأسية مضافة للتحكم في الانسيابية
-            this.color = `rgba(${Math.floor(Math.random() * 55 + 200)}, ${Math.floor(Math.random() * 100 + 100)}, 255, ${Math.random() * 0.5 + 0.4})`;
+            this.vx = 0; 
+            this.vy = 0;
+            // ألوان نيون مشعة جداً (وردي وبنفسجي وبنفسجي فاتح) لتعطي مظهراً فخماً للاسم
+            this.color = index % 2 === 0 ? `rgba(255, 40, 130, ${Math.random() * 0.5 + 0.5})` : `rgba(140, 60, 255, ${Math.random() * 0.5 + 0.5})`;
         }
         draw() {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
             ctx.fillStyle = this.color;
+            
+            // إضافة تأثير الإشعاع (Glow) عندما يتشكل الاسم ليكون مبهراً
+            if (isDrawingName) {
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = this.color;
+            }
             ctx.fill();
+            ctx.shadowBlur = 0; // إطفاء الإشعاع عند التفاعل العادي لتجنب البطء
         }
         update() {
-            if (mouse.x !== null && mouse.y !== null) {
+            if (!isDrawingName && mouse.x !== null && mouse.y !== null) {
+                // الوضع التفاعلي عند اللمس
                 let dx = mouse.x - this.x;
                 let dy = mouse.y - this.y;
                 let dist = Math.sqrt(dx * dx + dy * dy);
-                
                 if (dist < mouse.radius) {
-                    // تأثير جذب أو دفع ناعم جداً مبني على المسافة دون تسارع عشوائي
                     let force = (mouse.radius - dist) / mouse.radius;
-                    this.vx += (dx / dist) * force * 0.5;
-                    this.vy += (dy / dist) * force * 0.5;
+                    this.vx += (dx / dist) * force * 0.6;
+                    this.vy += (dy / dist) * force * 0.6;
                 }
             }
 
-            // تطبيق معامل الاحتكاك لإبطاء الجزيئات ومنعها من الحركة المستمرة بسرعة
             this.vx *= 0.85;
             this.vy *= 0.85;
 
-            // إضافة قوى العودة للموقع الأصلي بشكل خطي وناعم جداً (Easing)
-            let homeDx = this.baseX - this.x;
-            let homeDy = this.baseY - this.y;
+            // تحديد الهدف (إما المكان الأصلي العشوائي أو نقطة من اسم راوية)
+            let targetX = this.baseX;
+            let targetY = this.baseY;
+
+            if (isDrawingName && nameCoords.length > 0) {
+                // ربط كل جزيء بنقطة معينة من مصفوفة اسم راوية
+                let coordIndex = this.index % nameCoords.length;
+                targetX = nameCoords[coordIndex].x + (Math.sin(Date.now() * 0.002 + this.index) * 2); // حركة تموج خفيفة لتبدو حية
+                targetY = nameCoords[coordIndex].y + (Math.cos(Date.now() * 0.002 + this.index) * 2);
+            }
+
+            let homeDx = targetX - this.x;
+            let homeDy = targetY - this.y;
             
-            this.x += this.vx + homeDx * 0.08;
-            this.y += this.vy + homeDy * 0.08;
+            // سرعة الانتقال والعودة (جعلوها ناعمة وانسيابية جداً لمنع الشرك والارتداد)
+            let easing = isDrawingName ? 0.05 : 0.07;
+            this.x += this.vx + homeDx * easing;
+            this.y += this.vy + homeDy * easing;
         }
     }
 
-    for (let i = 0; i < maxParticles; i++) {
-        particles.push(new GlowParticle());
+    // بناء الجزيئات لأول مرة
+    function init() {
+        particles = [];
+        resize();
+        for (let i = 0; i < maxParticles; i++) {
+            particles.push(new GlowParticle(i));
+        }
+        resetIdleTimer();
     }
+
+    window.addEventListener('resize', resize);
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -946,6 +1024,8 @@
         }
         requestAnimationFrame(animate);
     }
+    
+    init();
     animate();
 })();
 </script>
